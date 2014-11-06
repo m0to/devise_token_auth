@@ -1,3 +1,5 @@
+require 'mongoid-locker'
+
 module DeviseTokenAuth::Concerns::User
   extend ActiveSupport::Concern
 
@@ -10,7 +12,7 @@ module DeviseTokenAuth::Concerns::User
       self.devise_modules.delete(:omniauthable)
     end
 
-    serialize :tokens, JSON
+    #serialize :tokens, JSON
 
     validates :email, presence: true, email: true, if: Proc.new { |u| u.provider == 'email' }
     validates_presence_of :uid, if: Proc.new { |u| u.provider != 'email' }
@@ -18,9 +20,20 @@ module DeviseTokenAuth::Concerns::User
     # only validate unique emails among email registration users
     validate :unique_email_user, on: :create
 
+    # Probably need to properly extract out data storage stuff
+    include Mongoid::Locker
+
+    # Include default devise modules. Others available are:
+    # :confirmable, :lockable, :timeoutable and :omniauthable
+    devise :database_authenticatable, :registerable,
+          :recoverable, :rememberable, :trackable, :validatable,
+          :confirmable, :omniauthable
+
     # can't set default on text fields in mysql, simulate here instead.
     after_save :set_empty_token_hash
     after_initialize :set_empty_token_hash
+
+    # End of data storage stuff
 
     # keep uid in sync with email
     before_save :sync_uid
@@ -203,9 +216,7 @@ module DeviseTokenAuth::Concerns::User
     ])
   end
 
-
   protected
-
 
   # NOTE: ensure that fragment comes AFTER querystring for proper $location
   # parsing using AngularJS.
@@ -238,7 +249,7 @@ module DeviseTokenAuth::Concerns::User
   end
 
   def destroy_expired_tokens
-    self.tokens.delete_if{|cid,v|
+    self.tokens.delete_if {|cid,v|
       expiry = v[:expiry] || v["expiry"]
       DateTime.strptime(expiry.to_s, '%s') < Time.now
     }
