@@ -141,12 +141,7 @@ module DeviseTokenAuth::Concerns::User
       updated_at and last_token and
 
       # ensure that previous token falls within the batch buffer throttle time of the last request
-<<<<<<< HEAD
-
       Time.parse(updated_at) > Time.now - DeviseTokenAuth.batch_request_buffer_throttle and
-=======
-      self.tokens[client_id]['updated_at'] > Time.now - DeviseTokenAuth.batch_request_buffer_throttle and
->>>>>>> 703a511a3a9b327c90d6abb508fbba328e7fb9b2
 
       # ensure that the token is valid
       BCrypt::Password.new(last_token) == token
@@ -211,7 +206,6 @@ module DeviseTokenAuth::Concerns::User
     return build_auth_header(token, client_id)
   end
 
-<<<<<<< HEAD
   def confirmed?
     self.devise_modules.exclude?(:confirmable) || super
   end
@@ -224,10 +218,6 @@ module DeviseTokenAuth::Concerns::User
 
   protected
 
-=======
-  protected
-
->>>>>>> 703a511a3a9b327c90d6abb508fbba328e7fb9b2
   # NOTE: ensure that fragment comes AFTER querystring for proper $location
   # parsing using AngularJS.
   def generate_url(url, params = {})
@@ -250,7 +240,6 @@ module DeviseTokenAuth::Concerns::User
     end
   end
 
-<<<<<<< HEAD
   def set_empty_token_hash
     self.tokens ||= {} if has_attribute?(:tokens)
   end
@@ -259,8 +248,6 @@ module DeviseTokenAuth::Concerns::User
     self.uid = email if provider == 'email'
   end
 
-=======
->>>>>>> 703a511a3a9b327c90d6abb508fbba328e7fb9b2
   def destroy_expired_tokens
     self.tokens.delete_if {|cid,v|
       expiry = v[:expiry] || v["expiry"]
